@@ -40,48 +40,22 @@ import {
 } from './utils/statistics';
 import { exportExpensesToExcel } from './utils/spreadsheetParser';
 
-const STORAGE_KEY = 'finanstat_expenses_clean_v6';
+const STORAGE_KEY = 'finanstat_expenses_fresh_zero';
 
 export default function App() {
-  // Load expenses from localStorage (only user imported data, strictly NO seed/mock data)
-  const [expenses, setExpenses] = useState<Expense[]>(() => {
-    try {
-      // Clear old demo/mock storage keys to guarantee all prior test data is wiped
-      [
-        'finanstat_expenses_v1',
-        'finanstat_expenses_v2',
-        'finanstat_expenses_v3',
-        'finanstat_expenses_v4',
-        'finanstat_user_expenses_clean',
-        'finanstat_spreadsheet_name',
-      ].forEach((k) => {
-        localStorage.removeItem(k);
-      });
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {
-      console.error('Error loading expenses from storage:', e);
-    }
-    return [];
-  });
+  // Completely empty state - strictly NO residual user or financial data
+  const [expenses, setExpenses] = useState<Expense[]>([]);
 
   // User Profile: Name and Age asked first before everything
-  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
-    try {
-      const saved = localStorage.getItem('finanstat_user_profile');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error('Error loading profile:', e);
-    }
-    return { name: '', age: null };
-  });
+  const [userProfile, setUserProfile] = useState<UserProfile>({ name: '', age: null });
 
   const handleUpdateUserProfile = (profile: UserProfile) => {
     setUserProfile(profile);
-    localStorage.setItem('finanstat_user_profile', JSON.stringify(profile));
+    try {
+      localStorage.setItem('finanstat_user_profile', JSON.stringify(profile));
+    } catch (e) {
+      console.error('Error saving profile:', e);
+    }
   };
 
   const [googleUser, setGoogleUser] = useState<User | null>(null);
@@ -96,6 +70,17 @@ export default function App() {
   const [isSpreadsheetModalOpen, setIsSpreadsheetModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
+
+  // Complete reset on mount to guarantee 0 residual data from prior sessions
+  useEffect(() => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+      logout().catch(() => {});
+    } catch (e) {
+      console.error('Purge error:', e);
+    }
+  }, []);
 
   // Monitor Google Authentication state
   useEffect(() => {

@@ -418,41 +418,44 @@ Como Senhor Moeda em sua versão de inteligência máxima, responda com profundi
 function generateLocalSenhorMoedaReply(question: string, simulation: any, userStats: any) {
   const amount = simulation?.amount || 0;
   const item = simulation?.item || 'este item';
-  const total = userStats?.total || 384;
-  const today = userStats?.todayTotal || 52;
-  const mean = userStats?.mean || 35;
+  const total = userStats?.total || 0;
+  const today = userStats?.todayTotal || 0;
+  const mean = userStats?.mean || 0;
+  const count = userStats?.count || 0;
 
   let verdict: 'APROVADO' | 'CAUTELA' | 'RECUSADO' | 'ORIENTACAO' = 'CAUTELA';
   let verdictLabel = 'Pense Duas Vezes';
   let verdictScore = 6;
-  let headline = 'Atenção aos pequenos vazamentos na carteira!';
-  let reply = `Analisando seus dados desde o dia 26/09, você acumula R$ ${total.toFixed(2)} em gastos (com R$ ${today.toFixed(2)} hoje e ticket médio de R$ ${mean.toFixed(2)}).`;
+  let headline = 'Atenção às escolhas financeiras do cotidiano!';
+  let reply = count > 0
+    ? `Com base nos seus gastos reais (total de R$ ${total.toFixed(2)}, sendo R$ ${today.toFixed(2)} hoje e ticket médio de R$ ${mean.toFixed(2)}), `
+    : `Sua conta está limpa e zerada (recomeço do zero). Como ainda não há lançamentos cadastrados, `;
 
   if (amount > 0) {
-    if (amount <= 30 && today + amount <= 90) {
+    if (amount <= 30 && (today + amount <= 80 || count === 0)) {
       verdict = 'APROVADO';
       verdictLabel = 'Selo Sr. Moeda: Aprovado!';
-      verdictScore = 9;
-      headline = 'Pode gastar com consciência, cabe no orçamento de hoje!';
-      reply += ` Gastar R$ ${amount.toFixed(2)} com "${item}" está dentro do seu padrão habitual de gastos. Só certifique-se de registrar logo em seguida!`;
-    } else if (amount > 150) {
+      verdictScore = 8;
+      headline = 'Pode gastar com consciência, compra de baixo impacto!';
+      reply += ` Gastar R$ ${amount.toFixed(2)} com "${item}" é um valor de baixo impacto. Se for útil ao seu dia a dia, siga em frente e mantenha o registro!`;
+    } else if (amount > 200) {
       verdict = 'RECUSADO';
-      verdictLabel = 'Segure o Bolso! Compra de Alto Impacto';
+      verdictLabel = 'Segure a Carteira! Compra de Alto Impacto';
       verdictScore = 3;
-      headline = 'Pare tudo! Essa compra vai desregular sua média semanal!';
-      reply += ` Gastar R$ ${amount.toFixed(2)} com "${item}" representa quase metade do que você gastou desde o dia 26 inteiro (R$ ${total.toFixed(2)}). Recomendo esperar 48 horas antes de bater o martelo.`;
+      headline = 'Pare e reflita antes de fechar o carrinho!';
+      reply += ` Gastar R$ ${amount.toFixed(2)} com "${item}" é um desembolso expressivo. Como você está organizando suas finanças do zero, recomendo aplicar a regra das 48 horas antes de decidir.`;
     } else {
       verdict = 'CAUTELA';
       verdictLabel = 'Alerta Amarelo: Cuidado com o impulso';
       verdictScore = 5;
-      headline = 'Vale a pena se você compensar cortando outro gasto hoje!';
-      reply += ` Gastar R$ ${amount.toFixed(2)} com "${item}" vai elevar seu gasto de hoje para R$ ${(today + amount).toFixed(2)}. Se for essencial, corte algo de alimentação ou lazer amanhã.`;
+      headline = 'Avalie se é necessidade ou apenas desejo do momento!';
+      reply += ` Gastar R$ ${amount.toFixed(2)} com "${item}" merece atenção. Pergunte-se: isso é realmente urgente ou pode esperar um momento mais oportuno?`;
     }
   } else {
     verdict = 'ORIENTACAO';
     verdictLabel = 'Conselho do Sr. Moeda';
     verdictScore = 8;
-    headline = 'O segredo da riqueza não é ganhar mais, é não deixar o balde furado!';
+    headline = 'O segredo da riqueza começa no primeiro passo e na disciplina!';
     reply += ' Se você tiver uma compra em mente agora, me diga o que quer comprar e o valor, que eu te digo na hora se você deve ou não gastar!';
   }
 
@@ -462,12 +465,12 @@ function generateLocalSenhorMoedaReply(question: string, simulation: any, userSt
     verdictScore,
     headline,
     reply,
-    financialImpact: amount > 0 ? `Seu gasto de hoje subiria para R$ ${(today + amount).toFixed(2)}.` : undefined,
-    suggestedAlternative: 'Aplique a regra das 24 horas: se ainda desejar amanhã sem comprometer o dia, compre à vista.',
+    financialImpact: amount > 0 ? `Esse gasto representará R$ ${amount.toFixed(2)} no seu caixa.` : undefined,
+    suggestedAlternative: 'Aplique a regra das 24 horas: se ainda desejar amanhã, decida com a mente fria.',
     quickQuestions: [
-      'Devo pedir um delivery de R$ 60 hoje?',
-      'Onde estou gastando mais desde o dia 26?',
-      'Posso comprar uma roupa de R$ 180?',
+      'Como montar uma reserva de emergência do zero?',
+      'O que rende mais hoje: CDI, Selic ou Poupança?',
+      'Como aplicar a regra 50-30-20 no orçamento?',
     ],
     isFallback: true,
   };

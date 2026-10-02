@@ -114,7 +114,7 @@ export const SenhorMoedaAdvisor: React.FC<SenhorMoedaAdvisorProps> = ({
       'O que rende mais hoje: Poupança, Nubank ou Tesouro Selic?',
       'Quero comprar um tênis de R$ 220, vale a pena agora?',
       'Quanto devo ter na minha Reserva de Emergência?',
-      'Onde estou gastando mais desde o dia 26 e como economizar?',
+      'Como começar a economizar e cortar despesas supérfluas?',
       'Vale a pena parcelar compras sem juros ou pedir desconto à vista?',
     ],
     compras: [

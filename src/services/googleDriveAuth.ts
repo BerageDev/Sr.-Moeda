@@ -70,6 +70,21 @@ export const getAccessToken = async (): Promise<string | null> => {
 };
 
 export const logout = async () => {
-  await signOut(auth);
+  try {
+    await signOut(auth);
+  } catch (e) {
+    console.error('Error signing out of Firebase:', e);
+  }
   cachedAccessToken = null;
+  // Clear any Firebase and Google storage items
+  try {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('firebase:') || key.includes('google')) {
+        localStorage.removeItem(key);
+      }
+    });
+    sessionStorage.clear();
+  } catch (e) {
+    // Ignore storage errors
+  }
 };

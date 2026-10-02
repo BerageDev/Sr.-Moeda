@@ -88,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
                 value={startDateFilter}
                 onChange={(e) => onSetStartDateFilter(e.target.value)}
                 className="bg-transparent text-white font-mono font-bold text-xs focus:outline-none cursor-pointer"
-                title="Filtrar gastos a partir desta data (ex: 26/09/2026)"
+                title="Filtrar gastos a partir desta data"
               />
               {startDateFilter && (
                 <button

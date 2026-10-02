@@ -120,42 +120,45 @@ export async function askSenhorMoeda(payload: {
     console.warn('Erro ao consultar o Senhor Moeda via API, usando conselho local:', error);
     const amount = payload.simulation?.amount || 0;
     const item = payload.simulation?.item || 'este item';
-    const today = payload.userStats?.todayTotal || 52;
-    const total = payload.userStats?.total || 384;
-    const mean = payload.userStats?.mean || 35;
+    const today = payload.userStats?.todayTotal || 0;
+    const total = payload.userStats?.total || 0;
+    const mean = payload.userStats?.mean || 0;
+    const count = payload.userStats?.count || 0;
 
     let verdict: SenhorMoedaVerdict = 'CAUTELA';
     let verdictLabel = 'Pense Duas Vezes';
     let verdictScore = 6;
-    let headline = 'Atenção aos pequenos vazamentos!';
-    let reply = `Com base nos seus gastos desde 26/09 (total de R$ ${total.toFixed(2)} e R$ ${today.toFixed(2)} hoje), `;
+    let headline = 'Atenção às suas escolhas de consumo!';
+    let reply = count > 0
+      ? `Com base nos seus gastos reais (total de R$ ${total.toFixed(2)} e R$ ${today.toFixed(2)} hoje), `
+      : `Sua conta está zerada e limpa (recomeço do zero). Como você ainda não adicionou gastos, `;
 
     if (amount > 0) {
-      if (amount <= 30 && today + amount <= 90) {
+      if (amount <= 30 && (today + amount <= 80 || count === 0)) {
         verdict = 'APROVADO';
         verdictLabel = 'Selo Sr. Moeda: Aprovado!';
-        verdictScore = 9;
-        headline = 'Pode gastar com consciência, está dentro da sua margem!';
-        reply += `gastar R$ ${amount.toFixed(2)} com "${item}" não vai desregular sua média (que é de R$ ${mean.toFixed(2)}). Aproveite com sabedoria!`;
-      } else if (amount > 150) {
+        verdictScore = 8;
+        headline = 'Pode gastar com consciência, compra de baixo impacto!';
+        reply += `gastar R$ ${amount.toFixed(2)} com "${item}" é um valor de baixo impacto. Aproveite com sabedoria!`;
+      } else if (amount > 200) {
         verdict = 'RECUSADO';
-        verdictLabel = 'Segure a Carteira! Risco de Descontrole';
-        verdictScore = 2;
-        headline = 'Pare tudo! Essa compra vai pesar demais no seu orçamento!';
-        reply += `gastar R$ ${amount.toFixed(2)} com "${item}" é muito alto em comparação com seu ticket médio (R$ ${mean.toFixed(2)}). Recomendo dormir sobre a decisão e esperar 48 horas.`;
+        verdictLabel = 'Segure a Carteira! Compra de Alto Impacto';
+        verdictScore = 3;
+        headline = 'Pare e reflita antes de fechar a compra!';
+        reply += `gastar R$ ${amount.toFixed(2)} com "${item}" é um desembolso expressivo. Como estamos organizando suas finanças do zero, recomendo esperar 48 horas.`;
       } else {
         verdict = 'CAUTELA';
         verdictLabel = 'Alerta Amarelo: Cuidado com o Impulso';
         verdictScore = 5;
-        headline = 'Vale a pena apenas se você economizar em outro item hoje!';
-        reply += `gastar R$ ${amount.toFixed(2)} com "${item}" vai elevar seu total de hoje para R$ ${(today + amount).toFixed(2)}. Pergunte a si mesmo: isso é necessidade imediata ou desejo passageiro?`;
+        headline = 'Avalie com calma antes de gastar!';
+        reply += `gastar R$ ${amount.toFixed(2)} com "${item}" merece atenção. Pergunte a si mesmo: isso é necessidade imediata ou desejo passageiro?`;
       }
     } else {
       verdict = 'ORIENTACAO';
       verdictLabel = 'Conselho do Sr. Moeda';
       verdictScore = 8;
-      headline = 'O segredo da riqueza é tapar os ralos da carteira!';
-      reply += 'Diga-me o que você está pensando em comprar e o valor em reais, e eu calculo o impacto exato na sua média e te dou meu veredito sincero!';
+      headline = 'O segredo da riqueza começa no primeiro passo e na disciplina!';
+      reply += 'Diga-me o que você está pensando em comprar e o valor em reais, e eu calculo o impacto e te dou meu veredito sincero!';
     }
 
     return {
@@ -164,12 +167,12 @@ export async function askSenhorMoeda(payload: {
       verdictScore,
       headline,
       reply,
-      financialImpact: amount > 0 ? `Seu gasto de hoje subiria para R$ ${(today + amount).toFixed(2)}.` : undefined,
+      financialImpact: amount > 0 ? `Esse gasto representará R$ ${amount.toFixed(2)} no seu bolso.` : undefined,
       suggestedAlternative: 'Se for um desejo e não urgência, aplique a regra dos 3 dias: se ainda quiser após 72h, compre sem culpa.',
       quickQuestions: [
-        'Devo pedir delivery de R$ 60 hoje?',
-        'Onde estou gastando mais desde o dia 26?',
-        'Posso comprar uma roupa de R$ 180?',
+        'Como montar uma reserva de emergência do zero?',
+        'O que rende mais hoje: CDI, Selic ou Poupança?',
+        'Como aplicar a regra 50-30-20 no orçamento?',
       ],
       isFallback: true,
     };
