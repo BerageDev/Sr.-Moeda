@@ -1,0 +1,6 @@
+{
+  "name": "FinanStat AI - Gestor de Custos & Finanças Inteligente",
+  "description": "Administre seus gastos diários, semanais e mensais. Importe planilhas, registre despesas por mensagens naturais, analise média, mediana e moda, e receba conselhos financeiros com IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
