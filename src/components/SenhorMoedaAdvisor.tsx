@@ -64,18 +64,33 @@ export const SenhorMoedaAdvisor: React.FC<SenhorMoedaAdvisorProps> = ({
   const [activeTopic, setActiveTopic] = useState<TopicCategory>('todas');
 
   // Chat conversation
-  const [messages, setMessages] = useState<SenhorMoedaMessage[]>([
-    {
-      id: 'welcome',
-      sender: 'senhor-moeda',
-      text: `Olá! Eu sou o Senhor Moeda 🪙, o seu conselheiro financeiro pessoal e guardião supremo do seu bolso!\n\nAgora estou com inteligência máxima integrada à API do Google para responder a TODAS as suas perguntas e dúvidas: desde avaliar se você deve ou não gastar em uma compra hoje, até explicar investimentos (Tesouro Selic, CDI, Reserva de Emergência), juros do cartão, regra 50-30-20 e estratégias de enriquecimento.\n\nSeus dados reais estão na ponta do meu lápis: acumulado de ${formatCurrency(stats.total)} desde 26/09 (sendo apenas ${formatCurrency(todayTotal)} hoje, ticket médio de ${formatCurrency(stats.mean)}). O que você quer me perguntar ou testar agora?`,
-      verdict: 'ORIENTACAO',
-      verdictLabel: 'Cérebro Financeiro Pronto',
-      financialConcept: 'Educação Financeira & Decisão Consciente',
-      mathProjection: `Seu teto diário recomendado é de ${formatCurrency(stats.mean)}, e seu gasto hoje está em ${formatCurrency(todayTotal)}.`,
-      timestamp: Date.now(),
-    },
-  ]);
+  const [messages, setMessages] = useState<SenhorMoedaMessage[]>(() => {
+    if (!stats || stats.count === 0) {
+      return [
+        {
+          id: 'welcome-clean',
+          sender: 'senhor-moeda',
+          text: `Olá! Eu sou o Senhor Moeda 🪙, o seu conselheiro financeiro pessoal e guardião do seu bolso!\n\nConforme solicitado, todos os dados anteriores de conta foram apagados e zerados. A base está completamente limpa.\n\nPara que eu possa cruzar seus números reais e dar diagnósticos exatos de compras e orçamentos, você só precisa:\n1. Conectar sua conta Google para buscarmos sua planilha no Drive (como o "controle_de_gastos-5.xlsx" na aba "Lançamentos"), OU\n2. Enviar um arquivo de planilha (.xlsx, .csv) com seus lançamentos.\n\nMesmo antes de enviar a planilha, você já pode me fazer qualquer pergunta sobre investimentos (Selic, CDI, Poupança), juros de cartão ou testar se deve ou não gastar em compras! O que tem em mente?`,
+          verdict: 'ORIENTACAO',
+          verdictLabel: 'Conta Limpa & Pronta',
+          financialConcept: 'Privacidade & Dados Pessoais',
+          timestamp: Date.now(),
+        },
+      ];
+    }
+    return [
+      {
+        id: 'welcome',
+        sender: 'senhor-moeda',
+        text: `Olá! Eu sou o Senhor Moeda 🪙, o seu conselheiro financeiro pessoal e guardião supremo do seu bolso!\n\nAgora estou com inteligência máxima integrada à API do Google para responder a TODAS as suas perguntas e dúvidas: desde avaliar se você deve ou não gastar em uma compra hoje, até explicar investimentos (Tesouro Selic, CDI, Reserva de Emergência), juros do cartão, regra 50-30-20 e estratégias de enriquecimento.\n\nSeus dados reais estão na ponta do meu lápis: acumulado de ${formatCurrency(stats.total)} (${stats.count} despesas, sendo ${formatCurrency(todayTotal)} hoje). O que você quer me perguntar ou testar agora?`,
+        verdict: 'ORIENTACAO',
+        verdictLabel: 'Cérebro Financeiro Pronto',
+        financialConcept: 'Educação Financeira & Decisão Consciente',
+        mathProjection: `Seu teto diário recomendado é de ${formatCurrency(stats.mean)}, e seu gasto hoje está em ${formatCurrency(todayTotal)}.`,
+        timestamp: Date.now(),
+      },
+    ];
+  });
 
   const [inputQuestion, setInputQuestion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -296,7 +311,7 @@ export const SenhorMoedaAdvisor: React.FC<SenhorMoedaAdvisorProps> = ({
           {/* Real-Time Metrics Known by Sr. Moeda */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 bg-slate-950/80 p-3 rounded-2xl border border-slate-800 text-xs w-full lg:w-auto">
             <div className="p-2 rounded-xl bg-slate-900/60">
-              <span className="text-[10px] text-slate-400 block font-semibold">Total desde 26/09:</span>
+              <span className="text-[10px] text-slate-400 block font-semibold">Total Acumulado:</span>
               <strong className="text-sm font-bold text-white font-mono">{formatCurrency(stats.total)}</strong>
             </div>
             <div className="p-2 rounded-xl bg-slate-900/60">
@@ -305,12 +320,14 @@ export const SenhorMoedaAdvisor: React.FC<SenhorMoedaAdvisorProps> = ({
             </div>
             <div className="p-2 rounded-xl bg-slate-900/60">
               <span className="text-[10px] text-slate-400 block font-semibold">Ticket Médio:</span>
-              <strong className="text-sm font-bold text-emerald-400 font-mono">{formatCurrency(stats.mean)}</strong>
+              <strong className="text-sm font-bold text-emerald-400 font-mono">
+                {stats.count > 0 ? formatCurrency(stats.mean) : 'R$ 0,00'}
+              </strong>
             </div>
             <div className="p-2 rounded-xl bg-slate-900/60">
-              <span className="text-[10px] text-slate-400 block font-semibold">Moda (Mais Frequente):</span>
-              <strong className="text-sm font-bold text-blue-400 font-mono">
-                {stats.mode ? formatCurrency(stats.mode.value) : 'R$ 35,00'}
+              <span className="text-[10px] text-slate-400 block font-semibold">Status Planilha:</span>
+              <strong className={`text-xs font-bold font-mono ${stats.count > 0 ? 'text-emerald-400' : 'text-slate-400'}`}>
+                {stats.count > 0 ? `${stats.count} itens` : 'Aguardando envio'}
               </strong>
             </div>
           </div>
