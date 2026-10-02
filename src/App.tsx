@@ -23,7 +23,8 @@ import { SpreadsheetImportModal } from './components/SpreadsheetImportModal';
 import { ExpenseFormModal } from './components/ExpenseFormModal';
 import { GoogleDriveSyncCard } from './components/GoogleDriveSyncCard';
 import { LoginAndSpreadsheetPortal } from './components/LoginAndSpreadsheetPortal';
-import { Expense } from './types/expense';
+import { MobileBottomNav } from './components/MobileBottomNav';
+import { Expense, UserProfile } from './types/expense';
 import {
   initAuth,
   googleSignIn,
@@ -39,14 +40,21 @@ import {
 } from './utils/statistics';
 import { exportExpensesToExcel } from './utils/spreadsheetParser';
 
-const STORAGE_KEY = 'finanstat_user_expenses_clean';
+const STORAGE_KEY = 'finanstat_expenses_clean_v6';
 
 export default function App() {
   // Load expenses from localStorage (only user imported data, strictly NO seed/mock data)
   const [expenses, setExpenses] = useState<Expense[]>(() => {
     try {
       // Clear old demo/mock storage keys to guarantee all prior test data is wiped
-      ['finanstat_expenses_v1', 'finanstat_expenses_v2', 'finanstat_expenses_v3', 'finanstat_expenses_v4'].forEach((k) => {
+      [
+        'finanstat_expenses_v1',
+        'finanstat_expenses_v2',
+        'finanstat_expenses_v3',
+        'finanstat_expenses_v4',
+        'finanstat_user_expenses_clean',
+        'finanstat_spreadsheet_name',
+      ].forEach((k) => {
         localStorage.removeItem(k);
       });
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -60,13 +68,27 @@ export default function App() {
     return [];
   });
 
+  // User Profile: Name and Age asked first before everything
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
+    try {
+      const saved = localStorage.getItem('finanstat_user_profile');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Error loading profile:', e);
+    }
+    return { name: '', age: null };
+  });
+
+  const handleUpdateUserProfile = (profile: UserProfile) => {
+    setUserProfile(profile);
+    localStorage.setItem('finanstat_user_profile', JSON.stringify(profile));
+  };
+
   const [googleUser, setGoogleUser] = useState<User | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [startDateFilter, setStartDateFilter] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'login-planilha' | 'dashboard' | 'senhor-moeda' | 'statistics' | 'advisor' | 'expenses'>('login-planilha');
-  const [currentFileName, setCurrentFileName] = useState<string>(() => {
-    return localStorage.getItem('finanstat_spreadsheet_name') || 'controle_de_gastos.xlsx';
-  });
+  const [currentFileName, setCurrentFileName] = useState<string>('');
   const [newlyAddedCount, setNewlyAddedCount] = useState<number>(0);
   const [downloadAlert, setDownloadAlert] = useState<string | null>(null);
 
@@ -236,12 +258,12 @@ export default function App() {
   };
 
   const handleClearAllData = () => {
-    if (window.confirm('Tem certeza de que deseja apagar todos os dados de conta e despesas? Seus dados só serão preenchidos via login do Google ou envio de planilhas.')) {
+    if (window.confirm('Tem certeza de que deseja apagar todos os dados de conta, perfil e planilhas? O aplicativo ficará totalmente limpo.')) {
       setExpenses([]);
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem('finanstat_spreadsheet_name');
-      setCurrentFileName('controle_de_gastos.xlsx');
+      setCurrentFileName('');
       setNewlyAddedCount(0);
+      setUserProfile({ name: '', age: null });
+      localStorage.clear();
       setSelectedMonth('all');
       setStartDateFilter('');
       setActiveTab('login-planilha');
@@ -281,7 +303,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1 pb-24 md:pb-8">
         
         {/* Floating/Inline Alert when new expenses have been added to the spreadsheet */}
         {newlyAddedCount > 0 && (
@@ -344,6 +366,8 @@ export default function App() {
         {/* Tab 0: Tela Inicial - Login & Planilha */}
         {activeTab === 'login-planilha' && (
           <LoginAndSpreadsheetPortal
+            userProfile={userProfile}
+            onUpdateUserProfile={handleUpdateUserProfile}
             googleUser={googleUser}
             onGoogleSignIn={handleGoogleSignIn}
             onGoogleLogout={handleGoogleLogout}
@@ -561,6 +585,7 @@ export default function App() {
             startDateFilter={startDateFilter}
             todayTotal={todayTotal}
             onAddExpense={(item) => handleAddExpenses([item])}
+            userProfile={userProfile}
           />
         )}
 
@@ -619,6 +644,18 @@ export default function App() {
         }}
         onSave={handleSaveExpense}
         expenseToEdit={expenseToEdit}
+      />
+
+      {/* Mobile & Tablet Bottom Navigation Bar */}
+      <MobileBottomNav
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onOpenAddModal={() => {
+          setExpenseToEdit(null);
+          setIsAddModalOpen(true);
+        }}
+        newlyAddedCount={newlyAddedCount}
+        expensesCount={expenses.length}
       />
     </div>
   );

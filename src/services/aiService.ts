@@ -102,6 +102,7 @@ export async function askSenhorMoeda(payload: {
   categoryBreakdown: CategorySummary[];
   recentExpenses: Expense[];
   startDateFilter?: string;
+  userProfile?: { name: string; age: number | null };
 }): Promise<SenhorMoedaResponse> {
   try {
     const res = await fetch('/api/ai/senhor-moeda', {

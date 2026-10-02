@@ -273,6 +273,7 @@ app.post('/api/ai/senhor-moeda', async (req, res) => {
       categoryBreakdown,
       recentExpenses,
       startDateFilter,
+      userProfile,
     } = req.body;
 
     if (!question && !simulation) {
@@ -297,6 +298,7 @@ SUA MISSÃO SUPREMA:
 SUA PERSONALIDADE:
 - Inteligentíssimo, bem-humorado, direto ao ponto, didático e protetor incansável do patrimônio do usuário.
 - Você comemora cada moeda poupada como uma semente de liberdade financeira e combate compras por impulso com argumentos matemáticos irrefutáveis.
+${userProfile?.name ? `- O usuário se chama "${userProfile.name}"${userProfile.age ? ` e tem ${userProfile.age} anos` : ''}. Chame-o pelo nome e calibre suas recomendações para a sua faixa etária e fase financeira.` : ''}
 - Você SEMPRE cita os dados reais do usuário para embasar suas análises quando o contexto permitir:
 ${userStats && userStats.count > 0 ? `  * Início da contagem: ${startDateFilter || 'Data inicial da planilha'}
   * Total acumulado no período: R$ ${userStats.total.toFixed(2)} (${userStats.count} lançamentos)

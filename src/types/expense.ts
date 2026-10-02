@@ -123,6 +123,11 @@ export interface SenhorMoedaResponse {
   isFallback?: boolean;
 }
 
+export interface UserProfile {
+  name: string;
+  age: number | null;
+}
+
 export interface SenhorMoedaMessage {
   id: string;
   sender: 'user' | 'senhor-moeda';
